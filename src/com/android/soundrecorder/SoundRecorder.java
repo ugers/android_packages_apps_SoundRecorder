@@ -439,6 +439,83 @@ public class SoundRecorder extends Activity
                     break;
             }
             return true;
+}else if ((keyCode == KeyEvent.KEYCODE_HEADSETHOOK)){
+			if(event.getRepeatCount() == 0){
+	            switch (mRecorder.state()) {
+	                case Recorder.IDLE_STATE:
+	                    if(Recorder.mPausePlay){
+							 mRecorder.startPlayback();
+						}else{
+							mRemainingTimeCalculator.reset();
+							if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+								mSampleInterrupted = true;
+								mErrorUiMessage = getResources().getString(R.string.insert_sd_card);
+								updateUi();
+							} else if (!mRemainingTimeCalculator.diskSpaceAvailable()) {
+								mSampleInterrupted = true;
+								mErrorUiMessage = getResources().getString(R.string.storage_is_full);
+								updateUi();
+							} else {
+								stopAudioPlayback();
+
+								if (AUDIO_AMR.equals(mRequestedType)) {
+									mRemainingTimeCalculator.setBitRate(BITRATE_AMR);
+									mRecorder.startRecording(MediaRecorder.OutputFormat.AMR_NB, ".amr", this);
+								} else if (AUDIO_3GPP.equals(mRequestedType)) {
+									mRemainingTimeCalculator.setBitRate(BITRATE_3GPP);
+									mRecorder.startRecording(MediaRecorder.OutputFormat.THREE_GPP, ".3gpp",
+											this);
+								} else {
+									throw new IllegalArgumentException("Invalid output file type requested");
+								}
+
+								if (mMaxFileSize != -1) {
+									mRemainingTimeCalculator.setFileSizeLimit(
+											mRecorder.sampleFile(), mMaxFileSize);
+								}
+							}
+						}
+	                    break;
+	                case Recorder.PLAYING_STATE:
+	                    mRecorder.stop();
+	                    saveSample();
+	                    break;
+	                case Recorder.RECORDING_STATE:
+	                    mRecorder.stop();
+	                    break;
+	            }
+			}else if((event.getFlags() & event.FLAG_LONG_PRESS) != 0){
+				mRemainingTimeCalculator.reset();
+				if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+					mSampleInterrupted = true;
+					mErrorUiMessage = getResources().getString(R.string.insert_sd_card);
+					updateUi();
+				} else if (!mRemainingTimeCalculator.diskSpaceAvailable()) {
+					mSampleInterrupted = true;
+					mErrorUiMessage = getResources().getString(R.string.storage_is_full);
+					updateUi();
+				} else {
+					stopAudioPlayback();
+
+					if (AUDIO_AMR.equals(mRequestedType)) {
+						mRemainingTimeCalculator.setBitRate(BITRATE_AMR);
+						mRecorder.startRecording(MediaRecorder.OutputFormat.AMR_NB, ".amr", this);
+					} else if (AUDIO_3GPP.equals(mRequestedType)) {
+						mRemainingTimeCalculator.setBitRate(BITRATE_3GPP);
+						mRecorder.startRecording(MediaRecorder.OutputFormat.THREE_GPP, ".3gpp",
+								this);
+					} else {
+						throw new IllegalArgumentException("Invalid output file type requested");
+					}
+
+					if (mMaxFileSize != -1) {
+						mRemainingTimeCalculator.setFileSizeLimit(
+								mRecorder.sampleFile(), mMaxFileSize);
+					}
+				}
+		}
+
+            return true;
         } else {
             return super.onKeyDown(keyCode, event);
         }

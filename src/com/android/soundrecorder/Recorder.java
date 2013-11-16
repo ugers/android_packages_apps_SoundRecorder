@@ -39,6 +39,8 @@ public class Recorder implements OnCompletionListener, OnErrorListener {
     public static final int PLAYING_STATE = 2;
     
     int mState = IDLE_STATE;
+    public static boolean mPauseRecord = false;   //ФЭНЈВјТф
+    public static boolean mPausePlay = false;     //ФЭНЈІҐ·Е
 
     public static final int NO_ERROR = 0;
     public static final int SDCARD_ACCESS_ERROR = 1;
@@ -162,8 +164,15 @@ public class Recorder implements OnCompletionListener, OnErrorListener {
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(outputfileformat);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        //mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        //mRecorder.setOutputFile(mSampleFile.getAbsolutePath());
+
+        /*Begin (Modified by Michael. 2012.09.24)*/
+        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         mRecorder.setOutputFile(mSampleFile.getAbsolutePath());
+        mRecorder.setAudioSamplingRate(44100);
+        mRecorder.setAudioEncodingBitRate(128000);
+        /*End (Modified by Michael. 2012.09.24)*/
 
         // Handle IOException
         try {
@@ -194,6 +203,7 @@ public class Recorder implements OnCompletionListener, OnErrorListener {
         }
         mSampleStart = System.currentTimeMillis();
         setState(RECORDING_STATE);
+        mPauseRecord = false;
     }
     
     public void stopRecording() {
@@ -206,6 +216,7 @@ public class Recorder implements OnCompletionListener, OnErrorListener {
 
         mSampleLength = (int)( (System.currentTimeMillis() - mSampleStart)/1000 );
         setState(IDLE_STATE);
+        mPauseRecord = true;
     }
     
     public void startPlayback() {
@@ -230,6 +241,7 @@ public class Recorder implements OnCompletionListener, OnErrorListener {
         
         mSampleStart = System.currentTimeMillis();
         setState(PLAYING_STATE);
+	mPausePlay = false;
     }
     
     public void stopPlayback() {
@@ -240,6 +252,7 @@ public class Recorder implements OnCompletionListener, OnErrorListener {
         mPlayer.release();
         mPlayer = null;
         setState(IDLE_STATE);
+	mPausePlay = true;
     }
     
     public void stop() {
